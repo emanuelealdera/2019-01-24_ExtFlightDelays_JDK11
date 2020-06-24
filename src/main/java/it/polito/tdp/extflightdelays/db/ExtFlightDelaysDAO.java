@@ -11,6 +11,7 @@ import java.util.List;
 import it.polito.tdp.extflightdelays.model.Airline;
 import it.polito.tdp.extflightdelays.model.Airport;
 import it.polito.tdp.extflightdelays.model.Flight;
+import it.polito.tdp.extflightdelays.model.Vicini;
 
 public class ExtFlightDelaysDAO {
 
@@ -115,4 +116,56 @@ public class ExtFlightDelaysDAO {
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
+	
+	public List<String> getCountries() {
+		String sql = "select distinct state from airports order by state";
+		List <String> result = new ArrayList<String>();
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				result.add(rs.getString("state"));
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public List<Vicini> getVicini() {
+		String sql = "SELECT  a1.state AS s1, a2.state AS s2, COUNT(distinct tail_number) as cnt " + 
+				"FROM flights f, airports a1, airports a2 " + 
+				"WHERE f.ORIGIN_AIRPORT_ID = a1.ID " + 
+				"AND f.DESTINATION_AIRPORT_ID = a2.id " + 
+				"GROUP BY a1.state, a2.state";
+		List <Vicini> result = new ArrayList<>();
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				result.add(new Vicini(rs.getString("s1"), rs.getString("s2"), rs.getInt("cnt")));
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+
+
+
+
+
 }
+
+
+
